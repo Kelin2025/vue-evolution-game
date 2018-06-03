@@ -7,10 +7,10 @@ export class HibernationEffect extends Effect {
     return this.turnsBlock === 0;
   }
 
-  onStageEnd() {
-    if (this.turnsBlock > 0) {
-      this.turnsBlock -= 1;
-    }
+  onStageEnd({ stage }) {
+    if (stage !== "feed") return;
+    if (this.turnsBlock === 0) return;
+    this.turnsBlock -= 1;
   }
 
   onOwnerClick() {
