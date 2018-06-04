@@ -2,9 +2,13 @@ import NanoEvents from "nanoevents";
 
 export class Creature {
   bus = new NanoEvents();
+  food = [];
   effects = [];
   isAlive = true;
-  currentFood = 0;
+
+  get currentFood() {
+    return this.food.length;
+  }
 
   get requiredFood() {
     return this.effects.reduce(
@@ -47,6 +51,7 @@ export class Creature {
 
   addEffect(effect) {
     this.effects.push(effect);
+    return this;
   }
 
   removeEffect(effect) {
@@ -54,18 +59,20 @@ export class Creature {
     if (idx !== -1) {
       this.effects.splice(idx, 1);
     }
+    return this;
   }
 
-  feed(amount) {
-    this.currentFood += amount;
-    this.emit("receiveFood", {
-      amount,
-      currentFood: this.currentFood,
-      requiredFood: this.requiredFood
-    });
-    if (this.currentFood > this.requiredFood) {
-      this.currentFood = this.requiredFood;
+  feed(FoodClass, amount) {
+    const realAmount = Math.min(this.requiredFood, amount);
+    for (let i = 0; i < realAmount; i++) {
+      this.food.push(new FoodClass());
     }
+    return this;
+  }
+
+  feedWith(...items) {
+    this.food.push(...items);
+    return this;
   }
 
   async tryToAtack(target) {
@@ -92,6 +99,7 @@ export class Creature {
 
   async tryToSurvive() {
     if (this.currentFood >= this.requiredFood) {
+      this.food = [];
       return true;
     } else {
       return await !this.die("food");
