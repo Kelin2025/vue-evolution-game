@@ -16,14 +16,16 @@ export const Game = {
   // Also playes cubes roll animation
   roll(cubes = 1) {
     const player = getPlayer();
-    GameBus.emit("someone:roll.start", player);
+    GameBus.emit("someone:roll.start", { player, cubes });
     // Emulate server response
     setTimeout(() => {
-      GameBus.emit("someone:roll.stop", player, times(roll, cubes));
+      const values = times(roll, cubes);
+      const total = values.reduce((res, cur) => res + cur, 0);
+      GameBus.emit("someone:roll.stop", { player, cubes, values, total });
     }, 500);
     return new Promise(resolve => {
-      const unbind = GameBus.on("someone:roll.stop", (player, value) => {
-        resolve(value);
+      const unbind = GameBus.on("someone:roll.stop", data => {
+        resolve(data);
         unbind();
       });
     });
@@ -35,15 +37,12 @@ export const Game = {
     if (exclude) {
       creatures = creatures.filter(creature => exclude.includes(creature));
     }
-    GameBus.emit("someone:creature-pick.start", player, creatures);
+    GameBus.emit("someone:creature-pick.start", { player, creatures });
     return new Promise(resolve => {
-      const unbind = GameBus.on(
-        "someone:creature-pick.stop",
-        (player, creature) => {
-          resolve(creature);
-          unbind();
-        }
-      );
+      const unbind = GameBus.on("someone:creature-pick.stop", data => {
+        resolve(data);
+        unbind();
+      });
     });
   }
 };
