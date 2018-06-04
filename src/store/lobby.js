@@ -13,6 +13,7 @@ export const state = {
   stage: "turn",
   cards: [],
   players: [],
+  creatures: [],
   currentPlayerIdx: 0
 };
 
@@ -53,6 +54,10 @@ export const actions = {
     commit("addPlayers", players);
   },
 
+  join({ commit, getters }) {
+    commit("addPlayers", [getters["player/info"]]);
+  },
+
   setStage({ commit }, stage) {
     commit("setStage", stage);
   },
@@ -68,4 +73,9 @@ export const actions = {
       STAGES[nextOrFirstIdx(STAGES, STAGES.indexOf(state.stage) + 1)]
     );
   }
+};
+
+export const getters = {
+  creatureOf: ({ creatures }) => user =>
+    creatures.filter(creature => creature.owner === user)
 };
